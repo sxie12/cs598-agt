@@ -1,1 +1,1 @@
-# cs598-agt
+Code to create normal game table
