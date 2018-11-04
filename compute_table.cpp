@@ -34,11 +34,13 @@ vector<strat> htv[2]; // H/T strat for player i
 // turn, player one strat, player two strat, player 1 flip, player 2 flip, pot
 void move(int turn, int p1a, int p2a, int p1f, int p2f, int pot) {
     // 0 = fold, 1 = check, 2 = raise
-    int pos = turn/2;
+    int pos = turn>>1, move;
     if (turn & 1) {
         // player 2
+        move = htv[1][p2a][p2f][pos] - '0';
     } else {
         // player 1
+        move = htv[0][p1a][p1f][pos] - '0';
     }
 }
 
