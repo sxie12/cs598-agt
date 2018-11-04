@@ -34,10 +34,11 @@ vector<strat> htv[2]; // H/T strat for player i
 // turn, player one strat, player two strat, player 1 flip, player 2 flip, pot
 void move(int turn, int p1a, int p2a, int p1f, int p2f, int pot) {
     // 0 = fold, 1 = check, 2 = raise
+    int pos = turn/2;
     if (turn & 1) {
-        // player 1
-    } else {
         // player 2
+    } else {
+        // player 1
     }
 }
 
@@ -48,9 +49,13 @@ void set_strats(int player) {
 }
 
 void get_ev() {
-    for (int i = 0; i < n[0]; ++i)
-        for (int j = 0; j < n[1]; ++j)
+    for (int i = 0; i < n[0]; ++i) {
+        for (int j = 0; j < n[1]; ++j) {
             ev[i][j] = (double) total[i][j] / 4.0;
+            printf("%.3lf ", ev[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 int main() { _
@@ -65,7 +70,7 @@ int main() { _
     for (int i = 0; i < htv[0].size(); ++i)
         for (int j = 0; j < htv[1].size(); ++j)
             for (int k = 0; k < 4; ++k)
-                move(1, i, j, outcomes[k].x, outcomes[k].y, 2);
+                move(0, i, j, outcomes[k].x, outcomes[k].y, 2);
 
     get_ev();
 
