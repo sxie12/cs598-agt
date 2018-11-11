@@ -24,29 +24,74 @@ struct strat {
 const int NUM_LEAVES = 9;
 
 const int n[2] = {5, 9};
-const string p1s[n[0]] = {"21", "20", "1 2", "1 1", "1 0"};
-const string p2s[n[1]] = {"221", "220", "121", "120", "021", "020", "21", "11", "01"};
+const string p1s[5] = {"21", "20", "1 2", "1 1", "1 0"};
+const string p2s[9] = {"221", "220", "121", "120", "021", "020", "21 ", "11 ", "01 "};
 const PII outcomes[4] = {{0, 0}, {0, 1}, {1, 0}, {1, 1}}; // heads = 0, tails = 1
 const int leaves[NUM_LEAVES] = {8, 9, 4, 5, 13, 14, 11, 12, 7};
 
-int total[11][11];
-double ev[11][11];
+int total[111][111];
+double ev[111][111];
 vector<string> v[2];
 vector<strat> htv[2]; // H/T strat for player i 
 int edges[22][3];
 int part[22];
 bool leaf[22];
 
-// turn, player one strat, player two strat, player 1 flip, player 2 flip, pot
-void move(int turn, int p1a, int p2a, int p1f, int p2f, int pot) {
+// turn, state, player one strat, player two strat, player 1 flip, player 2 flip, player 1 bet, player 2 bet
+void move(int turn, int cur, int p1a, int p2a, int p1f, int p2f, int p1b, int p2b) {
     // 0 = fold, 1 = check, 2 = raise
-    int pos = turn>>1, move;
+    assert(cur != -1);
+    int pos = part[cur]-1, mov;
+    cout << turn << " " << cur << " "  << pos << " " << p1a << " " << p2a << " " << p1f << " " << p2f << "\n";
+    cout.flush();
     if (turn & 1) {
         // player 2
-        move = htv[1][p2a][p2f][pos] - '0';
+        mov = htv[1][p2a].strats[p2f][pos] - '0';
+        if (!mov) {
+            // fold
+            total[p1a][p2a] += p2b;
+        } else if (mov == 1) {
+            // check
+            if (leaf[cur]) {
+                if (p1f != p2f) {
+                    if (p1f > p2f) {
+                        total[p1a][p2a] += p2b;
+                    } else {
+                        total[p1a][p2a] -= p1b;
+                    }
+                }
+            } else {
+                move(0, edges[cur][1], p1a, p2a, p1f, p2f, p1b, p2b);
+            }
+        } else {
+            // raise
+            assert(mov == 2);
+            move(0, edges[cur][2], p1a, p2a, p1f, p2f, p1b, p2b+1);
+        }
     } else {
         // player 1
-        move = htv[0][p1a][p1f][pos] - '0';
+        mov = htv[0][p1a].strats[p1f][pos] - '0';
+        if (!mov) {
+            // fold
+            total[p1a][p2a] -= p1b;
+        } else if (mov == 1) {
+            // check
+            if (leaf[cur]) {
+                if (p1f != p2f) {
+                    if (p1f > p2f) {
+                        total[p1a][p2a] += p2b;
+                    } else {
+                        total[p1a][p2a] -= p1b;
+                    }
+                }
+            } else {
+                move(1, edges[cur][1], p1a, p2a, p1f, p2f, p1b, p2b);
+            }
+        } else {
+            // raise
+            assert(mov == 2);
+            move(1, edges[cur][2], p1a, p2a, p1f, p2f, p1b+1, p2b);
+        }
     }
 }
 
@@ -54,11 +99,12 @@ void set_strats(int player) {
     for (int i = 0; i < n[player]; ++i)
         for (int j = 0; j < n[player]; ++j)
             htv[player].push_back(strat{{v[player][i], v[player][j]}});
+    cout << "size of player " << player << " strats is " << htv[player].size() << "\n";
 }
 
 void get_ev() {
-    for (int i = 0; i < n[0]; ++i) {
-        for (int j = 0; j < n[1]; ++j) {
+    for (int i = 0; i < htv[0].size(); ++i) {
+        for (int j = 0; j < htv[1].size(); ++j) {
             ev[i][j] = (double) total[i][j] / 4.0;
             printf("%.3lf ", ev[i][j]);
         }
@@ -74,8 +120,10 @@ int main() { _
 
     set_strats(0);
     set_strats(1);
+    cout.flush();
 
     // create tree
+    memset(edges, -1, sizeof(edges));
     edges[0][1] = 2;
     edges[0][2] = 1;
     edges[1][0] = 5;
@@ -104,7 +152,7 @@ int main() { _
     for (int i = 0; i < htv[0].size(); ++i)
         for (int j = 0; j < htv[1].size(); ++j)
             for (int k = 0; k < 4; ++k)
-                move(0, i, j, outcomes[k].x, outcomes[k].y, 2);
+                move(0, 0, i, j, outcomes[k].x, outcomes[k].y, 1, 1);
 
     get_ev();
 
