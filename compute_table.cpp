@@ -6,7 +6,7 @@ typedef long long int LLI;
 typedef pair<int,int> PII;
 
 #define _ ios_base::sync_with_stdio(0);
-#define debug
+// #define debug
 #define x first
 #define y second
 #define MXN 100005
@@ -41,9 +41,21 @@ bool leaf[22];
 void move(int turn, int cur, int p1a, int p2a, int p1f, int p2f, int p1b, int p2b) {
     // 0 = fold, 1 = check, 2 = raise
     assert(cur != -1);
+    if (leaf[cur]) {
+        if (p1f != p2f) {
+            if (p1f > p2f) {
+                total[p1a][p2a] += p2b;
+            } else {
+                total[p1a][p2a] -= p1b;
+            }
+        }
+        return;
+    }
     int pos = part[cur]-1, mov;
+#ifdef debug
     cout << turn << " " << cur << " "  << pos << " " << p1a << " " << p2a << " " << p1f << " " << p2f << "\n";
     cout.flush();
+#endif
     if (turn & 1) {
         // player 2
         mov = htv[1][p2a].strats[p2f][pos] - '0';
@@ -99,7 +111,6 @@ void set_strats(int player) {
     for (int i = 0; i < n[player]; ++i)
         for (int j = 0; j < n[player]; ++j)
             htv[player].push_back(strat{{v[player][i], v[player][j]}});
-    cout << "size of player " << player << " strats is " << htv[player].size() << "\n";
 }
 
 void get_ev() {
@@ -120,7 +131,6 @@ int main() { _
 
     set_strats(0);
     set_strats(1);
-    cout.flush();
 
     // create tree
     memset(edges, -1, sizeof(edges));
